@@ -7,7 +7,6 @@
         :is-x-small="screen.isXSmall"
         :is-large="screen.isLarge"
       >
-
         <div class="content">
           <router-view name="content" />
         </div>
