@@ -10,33 +10,42 @@
   </dx-scroll-view>
 </template>
 
-<script>
+<script language ="ts">
 import DxScrollView from "devextreme-vue/scroll-view";
-
+import { useRoute } from 'vue-router';
+import { watch, ref } from 'vue';
 export default {
   components: {
     DxScrollView
   },
-  props: {
-    title: String,
-    description: String
+  setup() {
+    const route = useRoute();
+    const title = ref(route.meta.title);
+    const description = ref("");
+    watch(
+      route,
+      () =>{
+        title.value = route.meta.title;
+        description.value = route.meta.description;
+    })
+    return {
+      title,
+      description
+    }
   }
 };
 </script>
 
 <style lang="scss">
 @import "../themes/generated/variables.base.scss";
-
 .single-card {
   width: 100%;
   height: 100%;
-
   .dx-card {
     width: 330px;
     margin: auto auto;
     padding: 40px;
     flex-grow: 0;
-
     .screen-x-small & {
       width: 100%;
       height: 100%;
@@ -46,17 +55,14 @@ export default {
       border: 0;
       flex-grow: 1;
     }
-
     .header {
       margin-bottom: 30px;
-
       .title {
         color: $base-text-color;
         line-height: 28px;
         font-weight: 500;
         font-size: 24px;
       }
-
       .description {
         color: rgba($base-text-color, alpha($base-text-color) * 0.7);
         line-height: 18px;

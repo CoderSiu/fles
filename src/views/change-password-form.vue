@@ -43,7 +43,7 @@
   </form>
 </template>
 
-<script>
+<script language ="ts">
 import DxForm, {
   DxItem,
   DxLabel,
@@ -54,9 +54,9 @@ import DxForm, {
 } from 'devextreme-vue/form';
 import DxLoadIndicator from 'devextreme-vue/load-indicator';
 import notify from 'devextreme/ui/notify';
-
+import { useRouter, useRoute } from 'vue-router';
+import { ref, reactive } from "vue";
 import auth from "../auth";
-
 export default {
 components: {
     DxForm,
@@ -68,38 +68,41 @@ components: {
     DxCustomRule,
     DxLoadIndicator
   },
-  created() {
-    this.recoveryCode = this.$route.params.recoveryCode;
-  },
-  data() {
-    return {
-        formData: {},
-        loading: false,
-        recoveryCode: ""
-    }
-  },
-  /* eslint-disable  no-debugger */
-  methods: {
-    onSubmit: async function() {
-    const { password } = this.formData;
-    this.loading = true;
-
-    const result = await auth.changePassword(password, this.recoveryCode);
-    this.loading = false;
-
+  setup() {
+    const router = useRouter();
+    const route = useRoute();
+    const recoveryCode = ref("");
+    const loading = ref(false);
+    const formData = reactive({
+      password:""
+    });
+    recoveryCode.value = route.params.recoveryCode;
+    async function onSubmit() {
+      const { password } = formData;
+      loading.value = true;
+  
+      const result = await auth.changePassword(password, recoveryCode.value);
+      loading.value = false;
+  
       if (result.isOk) {
-        this.$router.push("/login-form");
+        router.push("/login-form");
       } else {
         notify(result.message, 'error', 2000);
       }
-    },
-    confirmPassword(e) {
-      return e.value === this.formData.password;
+    }
+    function confirmPassword (e) {
+      return e.value === formData.password;
+    }
+    return {
+      recoveryCode,
+      loading,
+      formData,
+      onSubmit,
+      confirmPassword
     }
   }
 }
 </script>
 
 <style>
-
 </style>

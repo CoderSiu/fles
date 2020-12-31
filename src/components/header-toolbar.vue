@@ -20,9 +20,7 @@
         location="before"
         css-class="header-title dx-toolbar-label"
       >
-        <template>
-          <div>{{ title }}</div>
-        </template>
+        <div>{{ title }}</div>
       </dx-item>
 
       <dx-item
@@ -30,7 +28,7 @@
         locate-in-menu="auto"
         menu-item-template="menuUserItem"
       >
-        <template #default>
+      <template #default>
           <div>
             <dx-button
               class="user-button authorization"
@@ -38,14 +36,15 @@
               height="100%"
               styling-mode="text"
             >
-              <user-panel :user="user" :menu-items="userMenuItems" menu-mode="context" />
+              <user-panel :email="email" :menu-items="userMenuItems" menu-mode="context" />
             </dx-button>
           </div>
         </template>
       </dx-item>
+      
       <template #menuUserItem>
         <user-panel
-          :user="user"
+          :email="email"
           :menu-items="userMenuItems"
           menu-mode="list"
         />
@@ -54,37 +53,30 @@
   </header>
 </template>
 
-<script>
-import DxButton from "devextreme-vue/button";
-import DxToolbar, { DxItem } from "devextreme-vue/toolbar";
-import auth from "../auth";
+<script language="ts">
+  import DxButton from "devextreme-vue/button";
+  import DxToolbar, { DxItem } from "devextreme-vue/toolbar";
+  import auth from "../auth";
+  import { useRouter, useRoute } from 'vue-router';
+  import { getCurrentInstance, ref } from 'vue';
+  import { User } from "../model/User"
+  import UserPanel from "./user-panel";
 
-import UserPanel from "./user-panel";
-import { reactive } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-export default {
-  components: {
-    DxButton,
-    DxToolbar,
-    DxItem,
-    UserPanel
-  },  
-  props: {
-    menuToggleEnabled: Boolean,
-    title: String,
-    toggleMenuFunc: Function,
-    logOutFunc: Function
-  },
-  setup(props){
-    console.log(props.title);
-    const router = useRouter();
-    const route = useRoute();
-    let user= reactive({ });
-    auth.getUser().then((e) => user = e.data);
-    const userMenuItems = reactive(
-        [
-        {
+  export default {
+    props: {
+      menuToggleEnabled: Boolean,
+      title: String,
+      toggleMenuFunc: Function,
+      logOutFunc: Function
+    },
+    setup() {
+      const router = useRouter();
+      const route = useRoute();
+      const app = getCurrentInstance();
+      const curUser = app.appContext.config.globalProperties.$curUser;
+      const email = ref(curUser.email);
+      //auth.getUser().then((e) => email.value = e.data.email);
+      const userMenuItems = [{
           text: "Profile",
           icon: "user",
           onClick: onProfileClick
@@ -93,73 +85,69 @@ export default {
           text: "Logout",
           icon: "runner",
           onClick: onLogoutClick
-        }
-      ]
-    );
-    const onLogoutClick =()=>{
+      }];
+        
+      function onLogoutClick() {
         auth.logOut();
         router.push({
           path: "/login-form",
           query: { redirect: route.path }
         });
-    }
-
-    const onProfileClick =()=>{
+      }
+      function onProfileClick() {
         router.push({
-        path: "/profile",
-        query: { redirect: route.path }
-      });
+          path: "/profile",
+          query: { redirect: route.path }
+        });
+      }
+      return {
+        email,
+        userMenuItems,
+        onLogoutClick,
+        onProfileClick
+      };
+    },
+    components: {
+      DxButton,
+      DxToolbar,
+      DxItem,
+      UserPanel
     }
-    return {
-      user,
-      userMenuItems,
-      onLogoutClick,
-      onProfileClick
-    };
-  }
-};
+  };
 </script>
 
 <style lang="scss">
-@import "../themes/generated/variables.base.scss";
-@import "../dx-styles.scss";
-
-.header-component {
-  flex: 0 0 auto;
-  z-index: 1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-
-  .dx-toolbar .dx-toolbar-item.menu-button > .dx-toolbar-item-content .dx-icon {
-    color: $base-accent;
+  @import "../themes/generated/variables.base.scss";
+  @import "../dx-styles.scss";
+  .header-component {
+    flex: 0 0 auto;
+    z-index: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    .dx-toolbar .dx-toolbar-item.menu-button > .dx-toolbar-item-content .dx-icon {
+      color: $base-accent;
+    }
   }
-}
-
-.dx-toolbar.header-toolbar .dx-toolbar-items-container .dx-toolbar-after {
-  padding: 0 40px;
-
-  .screen-x-small & {
-    padding: 0 20px;
+  .dx-toolbar.header-toolbar .dx-toolbar-items-container .dx-toolbar-after {
+    padding: 0 40px;
+    .screen-x-small & {
+      padding: 0 20px;
+    }
   }
-}
-
-.dx-toolbar .dx-toolbar-item.dx-toolbar-button.menu-button {
-  width: $side-panel-min-width;
-  text-align: center;
-  padding: 0;
-}
-
-.header-title .dx-item-content {
-  padding: 0;
-  margin: 0;
-}
-
-.dx-theme-generic {
-  .dx-toolbar {
-    padding: 10px 0;
+  .dx-toolbar .dx-toolbar-item.dx-toolbar-button.menu-button {
+    width: $side-panel-min-width;
+    text-align: center;
+    padding: 0;
   }
-
-  .user-button > .dx-button-content {
-    padding: 3px;
+  .header-title .dx-item-content {
+    padding: 0;
+    margin: 0;
   }
-}
+  .dx-theme-generic {
+    .dx-toolbar {
+      padding: 10px 0;
+    }
+    .user-button > .dx-button-content {
+      padding: 3px;
+    }
+  }
 </style>

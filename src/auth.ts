@@ -1,31 +1,27 @@
-const defaultUser = {
-  email: 'sandra@example.com',
-  avatarUrl: 'https://js.devexpress.com/Demos/WidgetsGallery/JSDemos/images/employees/06.png'
-};
+import {User} from './model/User';
+import {api} from './api/APIService';
+let _user: User | null = null;
 
 export default {
-  _user: defaultUser,
+  _user,
   loggedIn() {
-    return !!this._user;
+    return !!_user;
   },
 
-  async logIn(email, password) {
-    try {
-      // Send request
-      console.log(email, password);
-      this._user = { ...defaultUser, email };
-
-      return {
-        isOk: true,
-        data: this._user
-      };
-    }
-    catch {
-      return {
-        isOk: false,
-        message: "Authentication failed"
-      };
-    }
+  async logIn(userName:string, password:string) {
+      return api.login({userName,password})
+        .then(response=>{
+          _user = response.data;
+          return {
+            isOk: true,
+            data: _user
+          };
+        }).catch(reason=>{
+          return {
+            isOk: false,
+            message: "Authentication failed"
+          };
+        })  
   },
 
   async logOut() {
@@ -48,7 +44,7 @@ export default {
     }
   },
 
-  async resetPassword(email) {
+  async resetPassword(email:string) {
     try {
       // Send request
       console.log(email);
@@ -65,7 +61,7 @@ export default {
     }
   },
 
-  async changePassword(email, recoveryCode) {
+  async changePassword(email:string, recoveryCode:string) {
     try {
       // Send request
       console.log(email, recoveryCode);
@@ -82,7 +78,7 @@ export default {
     }
   },
 
-  async createAccount(email, password) {
+  async createAccount(email:string, password:string) {
     try {
       // Send request
       console.log(email, password);

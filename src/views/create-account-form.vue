@@ -65,7 +65,7 @@
   </form>
 </template>
 
-<script>
+<script language ="ts">
 import DxForm, {
   DxItem,
   DxLabel,
@@ -77,9 +77,9 @@ import DxForm, {
 } from 'devextreme-vue/form';
 import DxLoadIndicator from 'devextreme-vue/load-indicator';
 import notify from 'devextreme/ui/notify';
-
+import { useRouter } from 'vue-router';
+import { ref, reactive } from 'vue';
 import auth from "../auth";
-
 export default {
   components: {
     DxForm,
@@ -92,28 +92,34 @@ export default {
     DxEmailRule,
     DxLoadIndicator
   },
-  data() {
-    return {
-        formData: {},
-        loading: false
+  setup() {
+    const router = useRouter();
+    
+    const loading = ref(false);
+    const formData = reactive({
+      email:"",
+      password:""
+    });
+    const onSubmit = async () => {
+    const { email, password } = formData;
+    loading.value = true;
+    const result = await auth.createAccount(email, password);
+    loading.value = false;
+    if (result.isOk) {
+      router.push("/login-form");
+    } else {
+      notify(result.message, 'error', 2000);
     }
-  },
-  methods: {
-    onSubmit: async function() {
-      const { email, password } = this.formData;
-      this.loading = true;
-
-      const result = await auth.createAccount(email, password);
-      this.loading = false;
-
-      if (result.isOk) {
-        this.$router.push("/login-form");
-      } else {
-        notify(result.message, 'error', 2000);
-      }
-    },
-    confirmPassword(e) {
-      return e.value === this.formData.password;
+  };
+    function confirmPassword(e) {
+      return e.value === formData.password;
+    }
+    
+    return {
+        formData,
+        loading,
+        onSubmit,
+        confirmPassword
     }
   }
 }
@@ -121,19 +127,16 @@ export default {
 
 <style lang="scss">
 @import "../themes/generated/variables.base.scss";
-
 .create-account-form {
   .policy-info {
     margin: 10px 0;
     color: rgba($base-text-color, alpha($base-text-color) * 0.7);
     font-size: 14px;
     font-style: normal;
-
     a {
       color: rgba($base-text-color, alpha($base-text-color) * 0.7);
     }
   }
-
   .login-link {
     color: $base-accent;
     font-size: 16px;

@@ -5,7 +5,7 @@ const Breakpoints = {
   Large: "(min-width: 1280px)"
 };
 
-let handlers = [];
+let handlers: any[] = [];
 const xSmallMedia = window.matchMedia(Breakpoints.XSmall);
 const smallMedia = window.matchMedia(Breakpoints.Small);
 const mediumMedia = window.matchMedia(Breakpoints.Medium);
@@ -26,8 +26,8 @@ export const sizes = () => {
   };
 };
 
-export const subscribe = handler => handlers.push(handler);
+export const subscribe = (handler: any) => handlers.push(handler);
 
-export const unsubscribe = handler => {
+export const unsubscribe = (handler: any) => {
   handlers = handlers.filter(item => item !== handler);
 };
